@@ -19,7 +19,7 @@ Description = "This script rewards users when they use the !first command"
 #---------------------------------------
 #   Set Variables
 #---------------------------------------
-settings_path = "Services\\Scripts\\scripts-holdmydonut\\backend\\first_payout\\first_payout_json"
+settings_path = "Services\\Scripts\\scripts-holdmydonut\\backend\\first_payout\\first_payout_settings.json"
 settings = None
 
 #   Script related
