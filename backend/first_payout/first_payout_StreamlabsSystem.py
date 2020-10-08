@@ -66,6 +66,15 @@ def Execute(data):
 
     return
 
+#---------------------------------------
+#   [Required] Tick Function
+#---------------------------------------
+def Tick(): #DONE
+    return
+
+##---------------------------------------
+#   !first
+##---------------------------------------
 def first_payout(user, message):
     global first_user_payout
     global second_user_payout
@@ -84,30 +93,33 @@ def first_payout(user, message):
                     Parent.AddPoints(user, first_user_payout)
                     user_payout_flag[0] = True
                     successful_user_payouts.append(user)
+                    send_success_message(user, first_user_payout, "first")
 
                 elif (user_payout_flag[1] == False):
                     Parent.AddPoints(user, second_user_payout)
                     user_payout_flag[1] = True
                     successful_user_payouts.append(user)
+                    send_success_message(user, second_user_payout, "second")
 
                 elif (user_payout_flag[2] == False):
                     Parent.AddPoints(user, third_user_payout)
                     user_payout_flag[2] = True
                     successful_user_payouts.append(user)
+                    send_success_message(user, third_user_payout, "third")
 
                 else:
-                    print('yeet')
+                    send_failure_message(user)
             else:
-                print('yeet')
+                send_failure_message(user)
 
     except Exception as e:
         Parent.SendTwitchWhisper("i_am_steak", e.message)
         Parent.SendTwitchWhisper("i_am_not_steak", e.message)
 
-
-#---------------------------------------
-#   [Required] Tick Function
-#---------------------------------------
-def Tick(): #DONE
+def send_success_message(user, payout, payout_position):
+    Parent.SendTwitchMessage(user + " has received " + str(payout) + " donutes for being the " + payout_position + " to chat Pog")
     return
 
+def send_failure_message(user):
+    Parent.SendTwitchMessage("@" + user + " kinda AYAYAweird ngl")
+    return
