@@ -1,3 +1,33 @@
 {
-	"output_file": "first_payout_settings.json"
+	"output_file": "first_payout_settings.json",
+    "first_user_payout": {
+        "type": "slider",
+        "value": 200,
+        "min": 0,
+        "max": 10000,
+        "ticks": 2,
+        "label": "First user payout (chatbot currency)",
+        "tooltip": "The amount of points that the first user to use the script will receive.",
+        "group": "first"
+    },
+    "second_user_payout": {
+        "type": "slider",
+        "value": 100,
+        "min": 0,
+        "max": 10000,
+        "ticks": 2,
+        "label": "Second user payout (chatbot currency)",
+        "tooltip": "The amount of points that the second user to use the script will receive.",
+        "group": "first"
+    },
+    "third_user_payout": {
+        "type": "slider",
+        "value": 50,
+        "min": 0,
+        "max": 10000,
+        "ticks": 2,
+        "label": "Third user payout (chatbot currency)",
+        "tooltip": "The amount of points that the third user to use the script will receive.",
+        "group": "first"
+    }
 }
