@@ -13,7 +13,7 @@ import time as t
 ScriptName = "!first script"
 Website = "https://github.com/SteanKotze/scripts-holdmydonut.git"
 Creator = "I_am_steak"
-Version = "0.1"
+Version = "0.3"
 Description = "This script rewards users when they use the !first command"
 
 #---------------------------------------
@@ -120,7 +120,7 @@ def first_payout(user, message):
         Parent.SendTwitchWhisper("i_am_not_steak", e.message)
 
 def send_success_message(user, payout, payout_position):
-    Parent.SendTwitchMessage(user + " has received " + str(payout) + " donutes for being the " + payout_position + " to chat Pog")
+    Parent.SendTwitchMessage(user + " has received " + str(payout) + " donuts for being the " + payout_position + " to chat Pog")
     return
 
 def send_failure_message(user):
