@@ -73,6 +73,8 @@ def Init():
 
     global bakeoff_steal_amount
     global bakeoff_steal_chance
+    global bakeoff_sabotage_amount
+    global bakeoff_sabotage_chance
 
     global bakeoff_anomoly_chance
     global bakeoff_anomoly_chance_breakdown
@@ -101,7 +103,7 @@ def Init():
     bakeoff_steal_amount = 20
     bakeoff_steal_chance = 35
     bakeoff_sabotage_amount = 10
-    bakeoff_sabotage_amount = 70
+    bakeoff_sabotage_chance = 70
 
     bakeoff_anomoly_chance = 5
     bakeoff_anomoly_chance_breakdown = 10
@@ -203,7 +205,7 @@ def bakeoff(user, message):
                     else:
                         bakeoff_users_entry_fees[other_user_index] = 0
                    
-                    Parent.SendTwitchmessage("Attempting to get a head, @" + user + " has replaced the water in @" + other_user + " ‘s jug with white vinegar!") # ToDo
+                    Parent.SendTwitchmessage("Attempting to get ahead, @" + user + " has replaced the water in @" + other_user + " 's jug with white vinegar!") # ToDo
 
     except Exception as e:
         Parent.SendTwitchWhisper("i_am_steak", e.message)
@@ -265,7 +267,7 @@ def bakeoff_tick():
 
             if ( anomoly_index <= bakeoff_anomoly_chance_breakdown ):
                 bakeoff_users_entry_fees[user_index] = 0
-                Parent.SendTwitchMessage("@" + user + " couldn’t take the pressure anymore and quit the competition! They were last heard shouting: 'Not the gumdrop buttons'")
+                Parent.SendTwitchMessage("@" + user + " couldn't take the pressure anymore and quit the competition! They were last heard shouting: 'Not the gumdrop buttons'")
 
             elif ( anomoly_index <= ( bakeoff_anomoly_chance_breakdown + bakeoff_anomoly_chance_flop ) ):
                 flop_percentage_amount = rand.randint(bakeoff_anomoly_chance_flop_lower_bound, bakeoff_anomoly_chance_flop_upper_bound)
