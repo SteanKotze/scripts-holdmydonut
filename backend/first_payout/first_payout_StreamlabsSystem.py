@@ -90,7 +90,7 @@ def first_payout(user, message):
         elif (message == "!scripts"):
             Parent.SendTwitchMessage("The scripts written for this channel were created by twitch.tv/i_am_steak")
         
-        elif (message in ['!first', '!second', 'third']):
+        elif (message in ['!first', '!second', '!third']):
             if (user not in successful_user_payouts):
                 if (user_payout_flag[0] == False):
                     Parent.AddPoints(user, first_user_payout)
