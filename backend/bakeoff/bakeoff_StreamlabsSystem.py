@@ -43,6 +43,15 @@ bakeoff_steal_chance = None                                                     
 bakeoff_sabotage_amount = None                                                                                  # how many donuts a contestant can sabotage an any point in time
 bakeoff_sabotage_chance = None                                                                                  # the chance of one contestant successfully sabotaging another contestant
 
+bakeoff_anomoly_chance = None                                                                                   # the chance of an anomoly occuring during the bakeoff
+bakeoff_anomoly_chance_breakdown = None                                                                         # the chance of a contestant having a breakdown, given anomoly occurence
+bakeoff_anomoly_chance_flop = None                                                                              # the chance of a contestant's product flopping, give anomoly occurence
+bakeoff_anomoly_chance_flop_lower_bound = None                                                                  # the lower bound for the payout reduction due to a flop
+bakeoff_anomoly_chance_flop_upper_bound = None                                                                  # the upper bound for the payout reduction due to a flop
+bakeoff_anomoly_chance_oven_fail = None                                                                         # the chance of an oven fail occuring, given anomoly occurence
+bakeoff_anomoly_chance_oven_fail_lower_bound = None                                                             # the lower bound for the payout reduction due to an oven fail
+bakeoff_anomoly_chance_oven_fail_upper_bound = None                                                             # the upper bound for the payout reduction due to an overn fail
+
 #---------------------------------------
 #   [Required] Intialize Data 
 #---------------------------------------
@@ -65,6 +74,15 @@ def Init():
     global bakeoff_steal_amount
     global bakeoff_steal_chance
 
+    global bakeoff_anomoly_chance
+    global bakeoff_anomoly_chance_breakdown
+    global bakeoff_anomoly_chance_flop
+    global bakeoff_anomoly_chance_flop_lower_bound
+    global bakeoff_anomoly_chance_flop_upper_bound
+    global bakeoff_anomoly_chance_oven_fail
+    global bakeoff_anomoly_chance_oven_fail_lower_bound
+    global bakeoff_anomoly_chance_oven_fail_upper_bound
+
     #   init
     with codecs.open(settings_path, encoding="utf-8-sig", mode="r") as settings_file:
         settings = json.load(settings_file, encoding="utf-8")
@@ -84,6 +102,16 @@ def Init():
     bakeoff_steal_chance = 35
     bakeoff_sabotage_amount = 10
     bakeoff_sabotage_amount = 70
+
+    bakeoff_anomoly_chance = 5
+    bakeoff_anomoly_chance_breakdown = 10
+    bakeoff_anomoly_chance_flop = 60
+    bakeoff_anomoly_chance_flop_lower_bound = 40
+    bakeoff_anomoly_chance_flop_upper_bound = 60
+    bakeoff_anomoly_chance_oven_fail = 30
+    bakeoff_anomoly_chance_oven_fail_lower_bound = 20
+    bakeoff_anomoly_chance_oven_fail_upper_bound = 40
+    ##  Non-settable variables
 
     last_tick = t.time()
     bakeoff_state = 4
@@ -162,7 +190,7 @@ def bakeoff(user, message):
 
                     Parent.SendTwitchmessage("Only thinking about themself, @" + user + " has stolen some of @" + other_user + " 's flour, eggs, butter, and icing sugar.") # ToDo
 
-        elif (( message.find("!sabotage") == 0 ) and ( user in bakeoff_users ) and ( bakefoff_state == 2 )):
+        elif (( message.find("!sabotage") == 0 ) and ( user in bakeoff_users ) and ( bakeoff_state == 2 )):
             other_user = extract_user(message)
             if (other_user in bakeoff_users):
                 if( rand.randint(0, 100) <= bakeoff_sabotage_amount ):
@@ -175,7 +203,7 @@ def bakeoff(user, message):
                     else:
                         bakeoff_users_entry_fees[other_user_index] = 0
                    
-                    Parent.SendTwitchmessage("Attempting to get a head, @" + user + " has replaced the water in @" + other_user + " ‘s jug with white vinegar!")
+                    Parent.SendTwitchmessage("Attempting to get a head, @" + user + " has replaced the water in @" + other_user + " ‘s jug with white vinegar!") # ToDo
 
     except Exception as e:
         Parent.SendTwitchWhisper("i_am_steak", e.message)
@@ -192,6 +220,15 @@ def bakeoff_tick():
     global bakeoff_start_time
     global bakeoff_cook_time
     global bakeoff_end_time
+
+    global bakeoff_anomoly_chance
+    global bakeoff_anomoly_chance_breakdown
+    global bakeoff_anomoly_chance_flop
+    global bakeoff_anomoly_chance_flop_lower_bound
+    global bakeoff_anomoly_chance_flop_upper_bound
+    global bakeoff_anomoly_chance_oven_fail
+    global bakeoff_anomoly_chance_oven_fail_lower_bound
+    global bakeoff_anomoly_chance_oven_fail_upper_bound
 
     #   variables
     current_time = t.time()
@@ -219,6 +256,28 @@ def bakeoff_tick():
         bakeoff_state = 4
         
         Parent.SendTwitchMessage("You can now start a new bakeoff!")
+
+    elif ( bakeoff_state == 2 ):
+        if ( rand.randint(0, 100) <= bakeoff_anomoly_chance ):
+            anomoly_index = rand.randint(0, 100)
+            user_index = rand.randint(0, len(bakeoff_users) - 1)
+            user = bakeoff_users[user_index]
+
+            if ( anomoly_index <= bakeoff_anomoly_chance_breakdown ):
+                bakeoff_users_entry_fees[user_index] = 0
+                Parent.SendTwitchMessage("@" + user + " couldn’t take the pressure anymore and quit the competition! They were last heard shouting: 'Not the gumdrop buttons'")
+
+            elif ( anomoly_index <= ( bakeoff_anomoly_chance_breakdown + bakeoff_anomoly_chance_flop ) ):
+                flop_percentage_amount = rand.randint(bakeoff_anomoly_chance_flop_lower_bound, bakeoff_anomoly_chance_flop_upper_bound)
+                flop_actual_amount = int( bakeoff_users_entry_fees[user_index] * float(100) / flop_percentage_amount )
+                bakeoff_users_entry_fees[user_index] -= flop_actual_amount
+                Parent.SendTwitchMessage("Despite their best efforts, sweat, blood, tears, and many sacrifices to the sugar Gods, @" + user + " pulled out a tray of slimey, eggy cookies with still frozen choc chips. Is there time to steal some of $users cookies before the judges are called?")
+
+            else:
+                flop_percentage_amount = rand.randint(bakeoff_anomoly_chance_oven_fail_lower_bound, bakeoff_anomoly_chance_oven_fail_upper_bound)
+                flop_actual_amount = int( bakeoff_users_entry_fees[user_index] * float(100) / flop_percentage_amount )
+                bakeoff_users_entry_fees[user_index] -= flop_actual_amount
+                Parent.SendTwitchmessage("In a particularly extravagant show of flair and pizazz, @" + user + " expertly put their cake in the oven and spun round in a twirl to throw off the other bakers, but did they remember to turn the oven on?")
 
 #---------------------------------------
 #   backend
@@ -250,7 +309,7 @@ def start_bakeoff(user, amount):
     if (bakeoff_state == 4):
         bakeoff_start_time = t.time() + bakeoff_entry_time
         bakeoff_state = 1
-        Parent.SendTwitchMessage("Yeet! Steak is not a donut KEKW ! @" + user + " started a bakeoff by entering with " + str(amount) + " donuts.")
+        Parent.SendTwitchMessage("Get ready to bake! @" + user + " has started a bake off competition. To enter type !bakeoff and the number of donuts you are using as your entry fee. Good luck bakers!")
 
     else:
-        Parent.SendTwitchMessage("After piling their entry fee of " + str(bakeoff_user_entry_amount) + " donuts on the table, " + user + " has entered the bake off competition!")
+        Parent.SendTwitchMessage("After piling their entry fee of " + str(amount) + " donuts on the table, " + user + " has entered the bake off competition!")
