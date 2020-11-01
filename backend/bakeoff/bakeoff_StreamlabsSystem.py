@@ -49,12 +49,12 @@ def Init():
     global settings
 
     global bakeoff_state
+    global bakeoff_cooldown_time
     global bakeoff_initialisation_time
     global bakeoff_entry_time
     global bakeoff_start_time
     global bakeoff_cook_time
     global bakeoff_end_time
-    global bakeoff_cooldown_time
 
     #   init
     with codecs.open(settings_path, encoding="utf-8-sig", mode="r") as settings_file:
@@ -67,15 +67,13 @@ def Init():
     #
     #else:
     tick_refresh_rate = 5
-    bakeoff_entry_time = 300
-    bakeoff_cook_time = 300
-    bakeoff_cooldown_time = 1500
+    bakeoff_entry_time = 10
+    bakeoff_cook_time = 10
+    bakeoff_cooldown_time = 15
 
     last_tick = t.time()
     bakeoff_state = 4
-    bakeoff_initialisation_time = t.time() 
-    bakeoff_entries_open = True
-    bakeoff_active = False
+    bakeoff_initialisation_time = t.time()
 
 #---------------------------------------
 #   [Required] Execute Data / Process Messages
@@ -134,7 +132,9 @@ def bakeoff_tick():
     #   globals
     global bakeoff_users
     global bakeoff_users_entry_fees
-    
+
+    global bakeoff_cooldown_time
+    global bakeoff_initialisation_time
     global bakeoff_state
     global bakeoff_start_time
     global bakeoff_cook_time
@@ -151,12 +151,21 @@ def bakeoff_tick():
         Parent.SendTwitchMessage("Ready. Set. Bake! Our bakers have 5 minutes to complete their creations for the judges!")
 
     elif (( bakeoff_state == 2) and ( bakeoff_end_time <= current_time )):
-        #   Perform actual bakeoff. ToDo get input from donut
-        #   close entries
+        bakeoff_initialisation_time = current_time + bakeoff_cooldown_time
+        bakeoff_state = 3
 
-    #   check for new bakeoff start
-    #   perform actual bakeoff
-    #   adjust variables for next bakeoff
+        for i in range(0, len(bakeoff_users)):
+            Parent.AddPoints(bakeoff_users[i], int(float(bakeoff_users_entry_fees[i]) * 1.25))
+
+        bakeoff_users = []
+        bakeoff_users_entry_fees = []
+
+        Parent.SendTwitchMessage("Bakeoff completed!")
+
+    elif (( bakeoff_state == 3) and (bakeoff_initialisation_time <= current_time)):
+        bakeoff_state = 4
+        
+        Parent.SendTwitchMessage("You can now start a new bakeoff!")
 
 #---------------------------------------
 #   backend
