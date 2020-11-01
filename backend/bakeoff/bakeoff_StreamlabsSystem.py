@@ -4,7 +4,7 @@
 import os
 import codecs
 import json
-import random as random
+import random as rand
 import time as t
 
 #---------------------------------------
@@ -30,12 +30,18 @@ bakeoff_users = []
 bakeoff_users_entry_fees = []
 
 bakeoff_state = None                                                                                            # 1=entry, 2=bakeoff, 3=cooldown, 4=idle
+
 bakeoff_initialisation_time = None                                                                              # the first point in time when the next bakeoff can start
 bakeoff_entry_time = None                                                                                       # how long users can join the next bakeoff
 bakeoff_start_time = None                                                                                       # the time when the next bakeoff starts
 bakeoff_cook_time = None                                                                                        # the amount of time a user has to complete a bakeoff
 bakeoff_end_time = None                                                                                         # the time that the current bakeoff ends
 bakeoff_cooldown_time = None                                                                                    # how long after the previous bakeoff before the next bakeoff can start
+
+bakeoff_steal_amount = None                                                                                     # how many donuts a contestant can steal at any point in time
+bakeoff_steal_chance = None                                                                                     # the chance of one contestant successfully stealing donuts
+bakeoff_sabotage_amount = None                                                                                  # how many donuts a contestant can sabotage an any point in time
+bakeoff_sabotage_chance = None                                                                                  # the chance of one contestant successfully sabotaging another contestant
 
 #---------------------------------------
 #   [Required] Intialize Data 
@@ -56,6 +62,9 @@ def Init():
     global bakeoff_cook_time
     global bakeoff_end_time
 
+    global bakeoff_steal_amount
+    global bakeoff_steal_chance
+
     #   init
     with codecs.open(settings_path, encoding="utf-8-sig", mode="r") as settings_file:
         settings = json.load(settings_file, encoding="utf-8")
@@ -70,6 +79,11 @@ def Init():
     bakeoff_entry_time = 10
     bakeoff_cook_time = 10
     bakeoff_cooldown_time = 15
+
+    bakeoff_steal_amount = 20
+    bakeoff_steal_chance = 35
+    bakeoff_sabotage_amount = 10
+    bakeoff_sabotage_amount = 70
 
     last_tick = t.time()
     bakeoff_state = 4
@@ -111,6 +125,12 @@ def bakeoff(user, message):
     global bakeoff_state
     global bakeoff_initialisation_time
 
+    global bakeoff_steal_amount
+    global bakeoff_steal_chance
+
+    global bakeoff_sabotage_amount
+    global bakeoff_sabotage_chance
+
     #   functionality
     try:
         if ((message.find("!bakeoff") == 0) and (user not in bakeoff_users)):
@@ -123,6 +143,39 @@ def bakeoff(user, message):
             
             else:
                 Parent.SendTwitchMessage("@" + user + " , you will be able to enter a new bakeoff in ") # ToDo
+
+        elif (( message.find("!steal") == 0 ) and ( user in bakeoff_users ) and ( bakeoff_state == 2 )):
+            other_user = extract_user(message)
+            if (other_user in bakeoff_users):
+                if ( rand.randint(0, 100) <= bakeoff_steal_chance ):
+                    user_index = bakeoff_users.index(user)
+                    other_user_index = bakeoff_users.index(other_user)
+                    other_user_donuts = bakeoff_users_entry_fees[other_user_index]
+
+                    if ( other_user_donuts > bakeoff_steal_amount ):
+                        bakeoff_users_entry_fees[user_index] += bakeoff_steal_amount
+                        bakeoff_users_entry_fees[other_user_index] -= bakeoff_steal_amount
+
+                    else:
+                        bakeoff_users_entry_fees[user_index] += bakeoff_users_entry_fees[other_user_index]
+                        bakeoff_users_entry_fees[other_user_index] = 0
+
+                    Parent.SendTwitchmessage("Only thinking about themself, @" + user + " has stolen some of @" + other_user + " 's flour, eggs, butter, and icing sugar.") # ToDo
+
+        elif (( message.find("!sabotage") == 0 ) and ( user in bakeoff_users ) and ( bakefoff_state == 2 )):
+            other_user = extract_user(message)
+            if (other_user in bakeoff_users):
+                if( rand.randint(0, 100) <= bakeoff_sabotage_amount ):
+                    other_user_index = bakeoff_users.index(other_user)
+                    other_user_donuts = bakeoff_users_entry_fees[other_user_index]
+
+                    if ( other_user_donuts > bakeoff_sabotage_amount ):
+                        bakeoff_users_entry_fees[other_user_index] -= bakeoff_sabotage_amount
+
+                    else:
+                        bakeoff_users_entry_fees[other_user_index] = 0
+                   
+                    Parent.SendTwitchmessage("Attempting to get a head, @" + user + " has replaced the water in @" + other_user + " ‘s jug with white vinegar!")
 
     except Exception as e:
         Parent.SendTwitchWhisper("i_am_steak", e.message)
@@ -174,6 +227,11 @@ def extract_donuts(message):
     split_message = message.split(' ')
     if (split_message[0] == "!bakeoff"):
         return int(split_message[1])
+
+def extract_user(message):
+    split_message = message.split(' ')
+    if (len(split_message) > 1):
+        return split_message[1]
     
 def pay_donuts(user, amount):
     if (Parent.GetPoints(user) >= long(amount)):

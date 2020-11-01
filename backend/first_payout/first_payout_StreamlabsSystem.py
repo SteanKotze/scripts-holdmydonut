@@ -4,7 +4,6 @@
 import os
 import codecs
 import json
-import random as rand
 import time as t
 
 #---------------------------------------
