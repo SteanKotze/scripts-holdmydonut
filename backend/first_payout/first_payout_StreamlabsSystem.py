@@ -86,6 +86,9 @@ def first_payout(user, message):
     try:
         if (message == "I am steak"):
             Parent.SendTwitchMessage("VoHiYo")
+
+        elif (message == "!scripts"):
+            Parent.SendTwitchMessage("The scripts written for this channel were created by twitch.tv/i_am_steak")
         
         elif (message in ['!first', '!second', 'third']):
             if (user not in successful_user_payouts):
