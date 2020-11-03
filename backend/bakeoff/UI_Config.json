@@ -1,6 +1,6 @@
 {
     "output_file": "bakeoff_settings.json",
-    "bakeoff_entry_time": {
+    "entry_time": {
         "type": "slider",
         "value": 10,
         "min": 10,
@@ -10,7 +10,7 @@
         "tooltip": "The amount of time during which users can enter a bakeoff",
         "group": "timers"
     },
-    "bakeoff_cook_time": {
+    "cook_time": {
         "type": "slider",
         "value": 10,
         "min": 10,
@@ -20,7 +20,7 @@
         "tooltip": "The amount of time that users can use to bake.",
         "group": "timers"
     },
-    "bakeoff_cooldown_time": {
+    "cooldown_time": {
         "type": "slider",
         "value": 900,
         "min": 300,
@@ -30,7 +30,7 @@
         "tooltip": "The amount of time between the last bakeoff and the next bakeoff",
         "group": "timers"
     },
-    "bakeoff_steal_amount": {
+    "steal_amount": {
         "type": "slider",
         "value": 20,
         "min": 2,
@@ -40,7 +40,7 @@
         "tooltip": "The amount of donuts that will be stolen from a user",
         "group": "steal"
     },
-    "bakeoff_steal_chance": {
+    "steal_chance": {
         "type": "slider",
         "value": 35,
         "min": 5,
@@ -50,7 +50,17 @@
         "tooltip": "The chance that a user successfully steals donuts from another participating user",
         "group": "steal"
     },
-    "bakeoff_sabotage_amount": {
+    "steal_max_count": {
+        "type": "slider",
+        "value": 2,
+        "min": 0,
+        "max": 20,
+        "ticks": 1,
+        "label": "Steal Count",
+        "tooltip": "The amount of times that users can steal from other users in any given bakeoff.",
+        "group": "steal"
+    },
+    "sabotage_amount": {
         "type": "slider",
         "value": 10,
         "min": 2,
@@ -60,7 +70,7 @@
         "tooltip": "The amount of donuts that the user will lose if the sabotage is successful",
         "group": "sabotage"
     },
-    "bakeoff_sabotage_chance": {
+    "sabotage_chance": {
         "type": "slider",
         "value": 70,
         "min": 5,
@@ -68,9 +78,19 @@
         "ticks": 5,
         "label": "Sabotage Chance (%)",
         "tooltip": "The chance for a user to successfully sabotages another user",
-        "group": "steal"
+        "group": "sabotage"
     },
-    "bakeoff_anomoly_chance": {
+    "sabotage_max_count": {
+        "type": "slider",
+        "value": 2,
+        "min": 0,
+        "max": 20 ,
+        "ticks": 1,
+        "label": "Sabotage Count",
+        "tooltip": "The amount of times that users can sabotage other users in any given bakeoff.",
+        "group": "sabotage"
+    },
+    "anomoly_chance": {
         "type": "slider",
         "value": 5,
         "min": 1,
@@ -80,7 +100,7 @@
         "tooltip": "The chance for an anomoly to occure every tick.",
         "group": "anomoly"
     },
-    "bakeoff_anomoly_chance_breakdown": {
+    "anomoly_chance_breakdown": {
         "type": "slider",
         "value": 10,
         "min": 1,
@@ -90,7 +110,7 @@
         "tooltip": "The chance for an anomoly to be of type 'Breakdown'",
         "group": "anomoly"
     },
-    "bakeoff_anomoly_chance_flop": {
+    "anomoly_chance_flop": {
         "type": "slider",
         "value": 60,
         "min": 30,
@@ -100,7 +120,7 @@
         "tooltip": "The chance for an anomoly to be of type 'Flop'",
         "group": "anomoly"
     },
-    "bakeoff_anomoly_chance_flop_lower_bound": {
+    "anomoly_chance_flop_lower_bound": {
         "type": "slider",
         "value": 40,
         "min": 30,
@@ -110,7 +130,7 @@
         "tooltip": "The smallest amount of donuts, in percentages, that the user could lose due to a flop",
         "group": "anomoly"
     },
-    "bakeoff_anomoly_chance_flop_upper_bound": {
+    "anomoly_chance_flop_upper_bound": {
         "type": "slider",
         "value": 60,
         "min": 50,
@@ -120,7 +140,7 @@
         "tooltip": "The largest amount of donuts, in percentages, that the user could lose due to a flop",
         "group": "anomoly"
     },
-    "bakeoff_anomoly_chance_oven_fail": {
+    "anomoly_chance_oven_fail": {
         "type": "slider",
         "value": 30,
         "min": 20,
@@ -130,7 +150,7 @@
         "tooltip": "The chance for an anomoly to be of type 'Oven Fail'",
         "group": "anomoly"
     },
-    "bakeoff_anomoly_chance_oven_fail_lower_bound": {
+    "anomoly_chance_oven_fail_lower_bound": {
         "type": "slider",
         "value": 20,
         "min": 10,
@@ -140,7 +160,7 @@
         "tooltip": "The smallest amount of donuts, in percentages, that the user could lose due to a oven fail",
         "group": "anomoly"
     },
-    "bakeoff_anomoly_chance_oven_fail_upper_bound": {
+    "anomoly_chance_oven_fail_upper_bound": {
         "type": "slider",
         "value": 40,
         "min": 30,
@@ -150,7 +170,7 @@
         "tooltip": "The largest amount of donuts, in percentages, that the user could lose due to a oven fail",
         "group": "anomoly"
     },
-    "bakeoff_first_place_multiplier": {
+    "first_place_multiplier": {
         "type": "dropdown",
         "value": 4.0,
         "items": [3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0],
@@ -158,7 +178,7 @@
         "tooltip": "The amount of payout that the user will get due to getting 1st place in the bakeoff",
         "group": "placings"
     },
-    "bakeoff_second_place_multiplier": {
+    "second_place_multiplier": {
         "type": "dropdown",
         "value": 3.0,
         "items": [2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0],
@@ -166,7 +186,7 @@
         "tooltip": "The amount of payout that the user will get due to getting 2nd place in the bakeoff",
         "group": "placings"
     },
-    "bakeoff_third_place_multiplier": {
+    "third_place_multiplier": {
         "type": "dropdown",
         "value": 2.0,
         "items": [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0],
@@ -174,7 +194,7 @@
         "tooltip": "The amount of payout that the user will get due to getting 3rd place in the bakeoff",
         "group": "placings"
     },
-    "bakeoff_general_multiplier": {
+    "general_multiplier": {
         "type": "dropdown",
         "value": 1.25,
         "items": [0.75, 1.0, 1.25],
