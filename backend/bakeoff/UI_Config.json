@@ -150,6 +150,38 @@
         "tooltip": "The largest amount of donuts, in percentages, that the user could lose due to a oven fail",
         "group": "anomoly"
     },
+    "bakeoff_first_place_multiplier": {
+        "type": "dropdown",
+        "value": 4.0,
+        "items": [3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0],
+        "label": "First Place Payout Multiplier",
+        "tooltip": "The amount of payout that the user will get due to getting 1st place in the bakeoff",
+        "group": "placings"
+    },
+    "bakeoff_second_place_multiplier": {
+        "type": "dropdown",
+        "value": 3.0,
+        "items": [2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4.0],
+        "label": "Second Place Payout Multiplier",
+        "tooltip": "The amount of payout that the user will get due to getting 2nd place in the bakeoff",
+        "group": "placings"
+    },
+    "bakeoff_third_place_multiplier": {
+        "type": "dropdown",
+        "value": 2.0,
+        "items": [1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0],
+        "label": "Third Place Payout Multiplier",
+        "tooltip": "The amount of payout that the user will get due to getting 3rd place in the bakeoff",
+        "group": "placings"
+    },
+    "bakeoff_general_multiplier": {
+        "type": "dropdown",
+        "value": 1.25,
+        "items": [0.75, 1.0, 1.25],
+        "label": "General Place Payout Multiplier",
+        "tooltip": "The amount of payout that the user will get due to not placing in the bakeoff",
+        "group": "placings"
+    },
     "tick_refresh_rate": {
       "type": "slider",
       "value": 5,
@@ -159,6 +191,5 @@
       "label": "Tick function refresh rate (seconds)",
       "tooltip": "Set this higher to ease burden of heist on CPU, lower increases CPU burden but faster response time.",
       "group": "Other"
-    }
-    
+    }    
 }

@@ -68,7 +68,7 @@ def Execute(data):
 #---------------------------------------
 #   [Required] Tick Function
 #---------------------------------------
-def Tick(): #DONE
+def Tick(): # DONE
     return
 
 ##---------------------------------------
@@ -123,5 +123,5 @@ def send_success_message(user, payout, payout_position):
     return
 
 def send_failure_message(user):
-    Parent.SendTwitchMessage("@" + user + " kinda AYAYAWeird ngl")
+    Parent.SendTwitchMessage("@" + user + " kinda DonutYikes ngl")
     return

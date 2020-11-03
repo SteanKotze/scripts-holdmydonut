@@ -14,5 +14,9 @@
   "bakeoff_anomoly_chance_oven_fail": 30.0,
   "bakeoff_anomoly_chance_oven_fail_lower_bound": 20.0,
   "bakeoff_anomoly_chance_oven_fail_upper_bound": 40.0,
-  "tick_refresh_rate": 5.0
+  "tick_refresh_rate": 5.0,
+  "bakeoff_first_place_multiplier": "4",
+  "bakeoff_second_place_multiplier": "3",
+  "bakeoff_third_place_multiplier": "2",
+  "bakeoff_general_multiplier": "1.25"
 };

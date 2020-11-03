@@ -19,7 +19,7 @@ Description = "This script allows users to start a bake off"
 #---------------------------------------
 #   Set Variables
 #---------------------------------------
-settings_path = "Services\\Scripts\\scripts-donut\\backend\\first_payout\\first_payout_settings.json"
+settings_path = "Services\\Scripts\\scripts-donut\\backend\\bakeoff\\bakeoff_settings.json"
 settings = None
 
 #   Script related
@@ -40,8 +40,12 @@ bakeoff_cooldown_time = None                                                    
 
 bakeoff_steal_amount = None                                                                                     # how many donuts a contestant can steal at any point in time
 bakeoff_steal_chance = None                                                                                     # the chance of one contestant successfully stealing donuts
+bakeoff_steal_count = None
+bakeoff_steal_max_count = None
 bakeoff_sabotage_amount = None                                                                                  # how many donuts a contestant can sabotage an any point in time
 bakeoff_sabotage_chance = None                                                                                  # the chance of one contestant successfully sabotaging another contestant
+bakeoff_sabotage_count = None
+bakeoff_sabotage_max_count = None
 
 bakeoff_anomoly_chance = None                                                                                   # the chance of an anomoly occuring during the bakeoff
 bakeoff_anomoly_chance_breakdown = None                                                                         # the chance of a contestant having a breakdown, given anomoly occurence
@@ -51,6 +55,11 @@ bakeoff_anomoly_chance_flop_upper_bound = None                                  
 bakeoff_anomoly_chance_oven_fail = None                                                                         # the chance of an oven fail occuring, given anomoly occurence
 bakeoff_anomoly_chance_oven_fail_lower_bound = None                                                             # the lower bound for the payout reduction due to an oven fail
 bakeoff_anomoly_chance_oven_fail_upper_bound = None                                                             # the upper bound for the payout reduction due to an overn fail
+
+bakeoff_first_place_multiplier = None                                                                           # 
+bakeoff_second_place_multiplier = None
+bakeoff_third_place_multiplier = None
+bakeoff_general_multiplier = None
 
 #---------------------------------------
 #   [Required] Intialize Data 
@@ -73,8 +82,10 @@ def Init():
 
     global bakeoff_steal_amount
     global bakeoff_steal_chance
+    global bakeoff_steal_max_count
     global bakeoff_sabotage_amount
     global bakeoff_sabotage_chance
+    global bakeoff_sabotage_max_count
 
     global bakeoff_anomoly_chance
     global bakeoff_anomoly_chance_breakdown
@@ -85,34 +96,69 @@ def Init():
     global bakeoff_anomoly_chance_oven_fail_lower_bound
     global bakeoff_anomoly_chance_oven_fail_upper_bound
 
+    global bakeoff_first_place_multiplier
+    global bakeoff_second_place_multiplier
+    global bakeoff_third_place_multiplier
+    global bakeoff_general_multiplier
+
     #   init
     with codecs.open(settings_path, encoding="utf-8-sig", mode="r") as settings_file:
         settings = json.load(settings_file, encoding="utf-8")
 
-    #if (settings != None):
-    #    tick_refresh_rate = int(settings['tick_refresh_rate'])
-    #    bakeoff_entry_time = int(settings['entry_time'])
-    #    bakeoff_cooldown_time = int(settings['cooldown_time'])
-    #
-    #else:
-    tick_refresh_rate = 5
-    bakeoff_entry_time = 10
-    bakeoff_cook_time = 10
-    bakeoff_cooldown_time = 15
+    if (settings != None):
+        bakeoff_entry_time = int(settings['bakeoff_entry_time'])
+        bakeoff_cook_time = int(settings['bakeoff_cook_time'])
+        bakeoff_cooldown_time = int(settings['bakeoff_cooldown_time'])
 
-    bakeoff_steal_amount = 20
-    bakeoff_steal_chance = 35
-    bakeoff_sabotage_amount = 10
-    bakeoff_sabotage_chance = 70
+        bakeoff_steal_amount = int(settings['bakeoff_steal_amount'])
+        bakeoff_steal_chance = int(settings['bakeoff_steal_chance'])
+        bakeoff_steal_max_count = int(setting['bakeoff_steal_max_count'])
+        bakeoff_sabotage_amount = int(settings['bakeoff_sabotage_amount'])
+        bakeoff_sabotage_chance = int(settings['bakeoff_sabotage_chance'])
+        bakeoff_sabotage_max_count = int(settings['bakeoff_sabotage_max_count'])
+        
+        bakeoff_anomoly_chance = int(settings['bakeoff_anomoly_chance'])
+        bakeoff_anomoly_chance_breakdown = int(settings['bakeoff_anomoly_chance_breakdown'])
+        bakeoff_anomoly_chance_flop = int(settings['bakeoff_anomoly_chance_flop'])
+        bakeoff_anomoly_chance_flop_lower_bound = int(settings['bakeoff_anomoly_chance_flop_lower_bound'])
+        bakeoff_anomoly_chance_flop_upper_bound = int(settings['bakeoff_anomoly_chance_flop_upper_bound'])
+        bakeoff_anomoly_chance_oven_fail = int(settings['bakeoff_anomoly_chance_oven_fail'])
+        bakeoff_anomoly_chance_oven_fail_lower_bound = int(settings['bakeoff_anomoly_chance_oven_fail_lower_bound'])
+        bakeoff_anomoly_chance_oven_fail_upper_bound = int(settings['bakeoff_anomoly_chance_oven_fail_upper_bound'])
 
-    bakeoff_anomoly_chance = 5
-    bakeoff_anomoly_chance_breakdown = 10
-    bakeoff_anomoly_chance_flop = 60
-    bakeoff_anomoly_chance_flop_lower_bound = 40
-    bakeoff_anomoly_chance_flop_upper_bound = 60
-    bakeoff_anomoly_chance_oven_fail = 30
-    bakeoff_anomoly_chance_oven_fail_lower_bound = 20
-    bakeoff_anomoly_chance_oven_fail_upper_bound = 40
+        bakeoff_first_place_multiplier = float(settings['bakeoff_first_place_multiplier'])
+        bakeoff_second_place_multiplier = float(settings['bakeoff_second_place_multiplier'])
+        bakeoff_third_place_multiplier = float(settings['bakeoff_third_place_multiplier'])
+        bakeoff_general_multiplier = float(settings['bakeoff_general_multiplier'])
+
+        tick_refresh_rate = int(settings['tick_refresh_rate'])
+    
+    else:
+        bakeoff_entry_time = 10
+        bakeoff_cook_time = 10
+        bakeoff_cooldown_time = 15
+
+        bakeoff_steal_amount = 20
+        bakeoff_steal_chance = 35
+        bakeoff_sabotage_amount = 10
+        bakeoff_sabotage_chance = 70
+
+        bakeoff_anomoly_chance = 5
+        bakeoff_anomoly_chance_breakdown = 10
+        bakeoff_anomoly_chance_flop = 60
+        bakeoff_anomoly_chance_flop_lower_bound = 40
+        bakeoff_anomoly_chance_flop_upper_bound = 60
+        bakeoff_anomoly_chance_oven_fail = 30
+        bakeoff_anomoly_chance_oven_fail_lower_bound = 20
+        bakeoff_anomoly_chance_oven_fail_upper_bound = 40
+
+        bakeoff_first_place_multiplier = 4.0
+        bakeoff_second_place_multiplier = 3.0
+        bakeoff_third_place_multiplier = 2.0
+        bakeoff_general_multiplier = 1.25
+
+        tick_refresh_rate = 5
+
     ##  Non-settable variables
 
     last_tick = t.time()
@@ -232,6 +278,11 @@ def bakeoff_tick():
     global bakeoff_anomoly_chance_oven_fail_lower_bound
     global bakeoff_anomoly_chance_oven_fail_upper_bound
 
+    global bakeoff_first_place_multiplier
+    global bakeoff_second_place_multiplier
+    global bakeoff_third_place_multiplier
+    global bakeoff_general_multiplier
+
     #   variables
     current_time = t.time()
 
@@ -245,14 +296,47 @@ def bakeoff_tick():
     elif (( bakeoff_state == 2) and ( bakeoff_end_time <= current_time )):
         bakeoff_initialisation_time = current_time + bakeoff_cooldown_time
         bakeoff_state = 3
+        
+        bakeoff_users_placings = []
+        bakeoff_users_payout = []
+        number_of_contestants = len(bakeoff_users)
 
-        for i in range(0, len(bakeoff_users)):
-            Parent.AddPoints(bakeoff_users[i], int(float(bakeoff_users_entry_fees[i]) * 1.25))
+        for _ in range(0, number_of_contestants):
+            random_user_index = rand.randint(0, len(bakeoff_users) - 1)
 
-        bakeoff_users = []
-        bakeoff_users_entry_fees = []
+            if (bakeoff_users_entry_fees[random_user_index] > 0):
+                bakeoff_users_placings.append(bakeoff_users[random_user_index])
+                bakeoff_users_payout.append(bakeoff_users_entry_fees[random_user_index])
 
-        Parent.SendTwitchMessage("Bakeoff completed!")
+            del bakeoff_users[random_user_index]
+            del bakeoff_users_entry_fees[random_user_index]
+
+        number_of_contestants = len(bakeoff_users_placings)
+        payout_podium_message = "The bakeoff has finished with the following podium placings: "
+        payout_general_message = "The following users finished the bakeoff without placing: "
+
+        for i in range(0, number_of_contestants):
+            if (i == 0):
+                bakeoff_users_payout[i] *= bakeoff_first_place_multiplier
+                payout_podium_message = payout_podium_message + "1st. " + bakeoff_users_placings[i] + " (" + str(bakeoff_users_payout[i]) + "), "
+
+            elif (i == 1):
+                bakeoff_users_payout[i] *= bakeoff_second_place_multiplier
+                payout_podium_message = payout_podium_message + "2st. " + bakeoff_users_placings[i] + " (" + str(bakeoff_users_payout[i]) + "), "
+
+            elif (i == 2): 
+                bakeoff_users_payout[i] *= bakeoff_third_place_multiplier
+                payout_podium_message = payout_podium_message + "3rd. " + bakeoff_users_placings[i] + " (" + str(bakeoff_users_payout[i]) + ")"
+
+            else:
+                bakeoff_users_payout[i] *= bakeoff_general_multiplier
+                payout_general_message = payout_general_message + bakeoff_users_placings[i] + " (" + str(bakeoff_users_payout[i]) + ")"
+
+                if (i != number_of_contestants -1):
+                    payout_general_message = payout_general_message + ", "
+
+            Parent.AddPoints(bakeoff_users_placings[i], bakeoff_users_payout[i])
+
 
     elif (( bakeoff_state == 3) and (bakeoff_initialisation_time <= current_time)):
         bakeoff_state = 4
