@@ -40,12 +40,14 @@ cooldown_time = None                                                            
 
 steal_amount = None                                                                                     # how many donuts a contestant can steal at any point in time
 steal_chance = None                                                                                     # the chance of one contestant successfully stealing donuts
-steal_count = None
-steal_max_count = None
+steal_count = None                                                                                      # the amount os steals that have occured
+steal_max_count = None                                                                                  # the maximum amount of steals that can occur during any given bakeoff
+steal_users = None                                                                                      # the users that have stolen during the current bakeoff
 sabotage_amount = None                                                                                  # how many donuts a contestant can sabotage an any point in time
 sabotage_chance = None                                                                                  # the chance of one contestant successfully sabotaging another contestant
-sabotage_count = None
-sabotage_max_count = None
+sabotage_count = None                                                                                   # the amount of sabotages that have occured
+sabotage_max_count = None                                                                               # the maximum amount of sabotages that can occur during any given bakeoff
+sabotage_users = None                                                                                   # the users that have sabotaged during the current bakeoff
 
 anomoly_chance = None                                                                                   # the chance of an anomoly occuring during the bakeoff
 anomoly_chance_breakdown = None                                                                         # the chance of a contestant having a breakdown, given anomoly occurence
@@ -84,10 +86,12 @@ def Init():
     global steal_chance
     global steal_count
     global steal_max_count
+    global steal_users
     global sabotage_amount
     global sabotage_chance
     global sabotage_count
     global sabotage_max_count
+    global sabotage_users
 
     global anomoly_chance
     global anomoly_chance_breakdown
@@ -142,8 +146,10 @@ def Init():
 
         steal_amount = 20
         steal_chance = 35
+        steal_max_count = 3
         sabotage_amount = 10
         sabotage_chance = 70
+        sabotage_max_count = 3
 
         anomoly_chance = 5
         anomoly_chance_breakdown = 10
@@ -154,9 +160,9 @@ def Init():
         anomoly_chance_oven_fail_lower_bound = 20
         anomoly_chance_oven_fail_upper_bound = 40
 
-        first_place_multiplier = 4.0
-        second_place_multiplier = 3.0
-        third_place_multiplier = 2.0
+        first_place_multiplier = 2.0
+        second_place_multiplier = 1.75
+        third_place_multiplier = 1.5
         general_multiplier = 1.25
 
         tick_refresh_rate = 5
@@ -166,10 +172,11 @@ def Init():
     last_tick = t.time()
     state = 4
     initialisation_time = t.time()
-    rand.seed(t.time())
 
     steal_count = 0
+    steal_users = []
     sabotage_count = 0
+    sabotage_users = []
 
 #---------------------------------------
 #   [Required] Execute Data / Process Messages
@@ -211,10 +218,12 @@ def bakeoff(user, message):
     global steal_chance
     global steal_count
     global steal_max_count
+    global steal_users
     global sabotage_amount
     global sabotage_chance
     global sabotage_count
     global sabotage_max_count
+    global sabotage_users
 
     #   functionality
     if ((message.find("!bakeoff") == 0) and (user not in users)):
@@ -229,45 +238,55 @@ def bakeoff(user, message):
             Parent.SendTwitchMessage("@" + user + " , you will be able to enter a new bakeoff in ") # ToDo
 
     elif (( message.find("!steal") == 0 ) and ( user in users ) and ( state == 2 ) and ( steal_count < steal_max_count )):
-        steal_count += 1
-        other_user = extract_user(message)
-        if (other_user in users):
-            if ( rand.randint(0, 100) <= steal_chance ):
-                user_index = users.index(user)
-                other_user_index = users.index(other_user)
-                other_user_donuts = users_entry_fees[other_user_index]
+        if ( user not in steal_users ): 
+            steal_count += 1
+            other_user = extract_user(message)
+            if (other_user in users):
+                if ( rand.randint(0, 100) <= steal_chance ):
+                    user_index = users.index(user)
+                    other_user_index = users.index(other_user)
+                    other_user_donuts = users_entry_fees[other_user_index]
+                    steal_total = int(other_user_donuts * ( float(steal_amount) / 100.0 ))
 
-                if ( other_user_donuts > steal_amount ):
-                    users_entry_fees[user_index] += steal_amount
-                    users_entry_fees[other_user_index] -= steal_amount
+                    if ( other_user_donuts > steal_total ):
+                        users_entry_fees[user_index] += steal_total
+                        users_entry_fees[other_user_index] -= steal_total
 
+                    else:
+                        users_entry_fees[user_index] += users_entry_fees[other_user_index]
+                        users_entry_fees[other_user_index] = 0
+
+                    Parent.SendTwitchMessage("Only thinking about themself, @" + user + " has stolen some of @" + other_user + " 's flour, eggs, butter, and icing sugar.") # ToDo
+                
                 else:
-                    users_entry_fees[user_index] += users_entry_fees[other_user_index]
-                    users_entry_fees[other_user_index] = 0
+                    Parent.SendTwitchMessage("@" + user + " no PunOko")
 
-                Parent.SendTwitchMessage("Only thinking about themself, @" + user + " has stolen some of @" + other_user + " 's flour, eggs, butter, and icing sugar.") # ToDo
-            
-            else:
-                Parent.SendTwitchMessage("@" + user + " no PunOko")
+        else:
+            Parent.SendTwitchmessage("@" + user + " you lookin kinda sus, ngl")
 
     elif (( message.find("!sabotage") == 0 ) and ( user in users ) and ( state == 2 ) and ( sabotage_count < sabotage_max_count)):
-        sabotage_count += 1
-        other_user = extract_user(message)
-        if (other_user in users):
-            if( rand.randint(0, 100) <= sabotage_chance ):
-                other_user_index = users.index(other_user)
-                other_user_donuts = users_entry_fees[other_user_index]
+        if ( user not in sabotage_users ):
+            sabotage_count += 1
+            other_user = extract_user(message)
+            if (other_user in users):
+                if( rand.randint(0, 100) <= sabotage_chance ):
+                    other_user_index = users.index(other_user)
+                    other_user_donuts = users_entry_fees[other_user_index]
+                    sabotage_total = int(other_user_donuts * ( float( sabotage_amount ) / 100.0 ))
 
-                if ( other_user_donuts > sabotage_amount ):
-                    users_entry_fees[other_user_index] -= sabotage_amount
+                    if ( other_user_donuts > sabotage_total ):
+                        users_entry_fees[other_user_index] -= sabotage_total
 
-                else:
-                    users_entry_fees[other_user_index] = 0
+                    else:
+                        users_entry_fees[other_user_index] = 0
+                    
+                    Parent.SendTwitchMessage("Attempting to get ahead, @" + user + " has replaced the water in @" + other_user + " 's jug with white vinegar!") # ToDo
                 
-                Parent.SendTwitchmessage("Attempting to get ahead, @" + user + " has replaced the water in @" + other_user + " 's jug with white vinegar!") # ToDo
-            
-            else:
-                Parent.SendTwitchMessage("@" + user + " no PunOko")
+                else:
+                    Parent.SendTwitchMessage("@" + user + " no PunOko")
+
+        else:
+            Parent.SendTwitchMessage("@" + user + " you lookin kinda sus, ngl")
 
 def bakeoff_tick():
     #   globals
@@ -282,7 +301,9 @@ def bakeoff_tick():
     global end_time
 
     global steal_count
+    global steal_users
     global sabotage_count
+    global sabotage_users
 
     global anomoly_chance
     global anomoly_chance_breakdown
@@ -306,6 +327,8 @@ def bakeoff_tick():
         end_time = current_time + cook_time
         state = 2
 
+        rand.seed(t.time())
+
         Parent.SendTwitchMessage("Ready. Set. Bake! Our bakers have 5 minutes to complete their creations for the judges!")
 
     elif (( state == 2) and ( end_time <= current_time )):
@@ -313,7 +336,9 @@ def bakeoff_tick():
         state = 3
 
         steal_count = 0
+        steal_users = []
         sabotage_count = 0
+        sabotage_users = []
         
         users_placings = []
         users_payout = []
@@ -332,6 +357,7 @@ def bakeoff_tick():
         number_of_contestants = len(users_placings)
         payout_podium_message = "The bakeoff has finished with the following podium placings: "
         payout_general_message = "The following users finished the bakeoff without placing: "
+        debugging_whisper = ""
 
         for i in range(0, number_of_contestants):
             if (i == 0):
@@ -353,7 +379,14 @@ def bakeoff_tick():
                 if (i != number_of_contestants -1):
                     payout_general_message = payout_general_message + ", "
 
+            debugging_whisper = debugging_whisper + str(i) + ":" + users_placings[i] + ":" + str(users_payout[i]) + " - "
             Parent.AddPoints(users_placings[i], users_payout[i])
+
+        Parent.SendTwitchMessage(payout_podium_message)
+        Parent.SendTwitchWhisper("I_am_steak", debugging_whisper)
+        
+        if (number_of_contestants > 3):
+            Parent.SendTwitchMessage(payout_general_message)
 
 
     elif (( state == 3) and (initialisation_time <= current_time)):
@@ -362,7 +395,9 @@ def bakeoff_tick():
         Parent.SendTwitchMessage("You can now start a new bakeoff!")
 
     elif ( state == 2 ):
-        if ( rand.randint(0, 100) <= anomoly_chance ):
+        chance = rand.randint(0, 100)
+        if ( chance <= anomoly_chance ):
+            Parent.SendTwitchWhisper("I_am_steak", "chance-" + str(chance) + ": anomoly_chance-" + str(anomoly_chance))
             anomoly_index = rand.randint(0, 100)
             user_index = rand.randint(0, len(users))
             user = users[user_index]
@@ -388,8 +423,8 @@ def bakeoff_tick():
 #---------------------------------------
 def extract_donuts(message):
     split_message = message.split(' ')
-    if (split_message[0] == "!bakeoff"):
-        return int(split_message[1])
+    if (( split_message[0] == "!bakeoff" ) and ( len(split_message) > 1 )):
+        return int(split_message[1])    
 
 def extract_user(message):
     split_message = message.split(' ')
