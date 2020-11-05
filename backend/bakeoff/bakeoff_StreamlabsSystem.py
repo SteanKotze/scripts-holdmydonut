@@ -431,7 +431,11 @@ def extract_donuts(message):
 def extract_user(message):
     split_message = message.split(' ')
     if (len(split_message) > 1):
-        return split_message[1]
+        if ( split_message[1][0] == '@'):
+            return split_message[1][1:]
+        
+        else:
+            return split_message[1]
     
 def pay_donuts(user, amount):
     if (Parent.GetPoints(user) >= long(amount)):
