@@ -239,9 +239,10 @@ def bakeoff(user, message):
 
     elif (( message.find("!steal") == 0 ) and ( user in users ) and ( state == 2 ) and ( steal_count < steal_max_count )):
         if ( user not in steal_users ): 
-            steal_count += 1
             other_user = extract_user(message)
             if (other_user in users):
+                steal_users.append(user)
+                steal_count += 1
                 if ( rand.randint(0, 100) <= steal_chance ):
                     user_index = users.index(user)
                     other_user_index = users.index(other_user)
@@ -266,9 +267,10 @@ def bakeoff(user, message):
 
     elif (( message.find("!sabotage") == 0 ) and ( user in users ) and ( state == 2 ) and ( sabotage_count < sabotage_max_count)):
         if ( user not in sabotage_users ):
-            sabotage_count += 1
             other_user = extract_user(message)
             if (other_user in users):
+                sabotage_users.append(user)
+                sabotage_count += 1
                 if( rand.randint(0, 100) <= sabotage_chance ):
                     other_user_index = users.index(other_user)
                     other_user_donuts = users_entry_fees[other_user_index]
