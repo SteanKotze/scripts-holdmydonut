@@ -226,7 +226,9 @@ def bakeoff(user, message):
     global sabotage_users
 
     #   functionality
-    if ((message.find("!bakeoff") == 0) and (user not in users)):
+    if (message == "!bakeoff"):
+        Parent.SendTwitchMessage("You can start a bakeoff by typing !bakeoff <points> in chat. Once the event starts you can !steal <user> and !sabotage <user>")
+    elif ((message.find("!bakeoff") == 0) and (user not in users)):
         if ((t.time() >= initialisation_time) and (state == 1 or state == 4)):
             user_entry_amount = extract_donuts(message)
             if (pay_donuts(user, user_entry_amount)):
@@ -410,13 +412,13 @@ def bakeoff_tick():
 
             elif ( anomoly_index <= ( anomoly_chance_breakdown + anomoly_chance_flop ) ):
                 flop_percentage_amount = rand.randint(anomoly_chance_flop_lower_bound, anomoly_chance_flop_upper_bound)
-                flop_actual_amount = int( users_entry_fees[user_index] * float(100) / flop_percentage_amount )
+                flop_actual_amount = int( users_entry_fees[user_index] * ( float(flop_percentage_amount) / 100.0 ))
                 users_entry_fees[user_index] -= flop_actual_amount
                 Parent.SendTwitchMessage("Despite their best efforts, sweat, blood, tears, and many sacrifices to the sugar Gods, @" + user + " pulled out a tray of slimey, eggy cookies with still frozen choc chips. Is there time to steal some of the other competitors' cookies before the judges are called?")
 
             else:
                 flop_percentage_amount = rand.randint(anomoly_chance_oven_fail_lower_bound, anomoly_chance_oven_fail_upper_bound)
-                flop_actual_amount = int( users_entry_fees[user_index] * float(100) / flop_percentage_amount )
+                flop_actual_amount = int( users_entry_fees[user_index] * ( float(flop_percentage_amount) / 100.0 ))
                 users_entry_fees[user_index] -= flop_actual_amount
                 Parent.SendTwitchmessage("In a particularly extravagant show of flair and pizazz, @" + user + " expertly put their cake in the oven and spun round in a twirl to throw off the other bakers, but did they remember to turn the oven on?")
 
