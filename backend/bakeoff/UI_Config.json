@@ -170,6 +170,26 @@
         "tooltip": "The largest amount of donuts, in percentages, that the user could lose due to a oven fail",
         "group": "anomoly"
     },
+    "anomoly_maximum_occurences": {
+        "type": "slider",
+        "value": 3,
+        "min": 1,
+        "max": 50,
+        "ticks": 1,
+        "label": "Maximum Anomoly Occurences",
+        "tooltip": "The maximum amount of anomolies that can occur during any given bakeoff",
+        "group": "anomoly"
+    },
+    "anomoly_cooldown_time": {
+        "type": "slider",
+        "value": 5,
+        "min": 0,
+        "max": 25,
+        "ticks": 1,
+        "label": "Anomoly Cooldown Time",
+        "tooltip": "The time between any two anomolies in a single bakeoff",
+        "group": "anomoly"
+    },
     "first_place_multiplier": {
         "type": "dropdown",
         "value": 2.0,

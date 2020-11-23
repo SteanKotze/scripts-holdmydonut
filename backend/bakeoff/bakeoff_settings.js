@@ -1,10 +1,10 @@
 ﻿var settings = {
-  "entry_time": 150,
-  "cook_time": 60.0,
+  "entry_time": 150.0,
+  "cook_time": 300,
   "cooldown_time": 300.0,
-  "steal_amount": 12,
+  "steal_amount": 12.0,
   "steal_chance": 35.0,
-  "sabotage_amount": 12,
+  "sabotage_amount": 12.0,
   "sabotage_chance": 70.0,
   "anomoly_chance": 10.0,
   "anomoly_chance_breakdown": 10.0,
@@ -20,6 +20,8 @@
   "third_place_multiplier": "1.5",
   "general_place_multiplier": "1.25",
   "general_multiplier": "1.25",
-  "steal_max_count": 3,
-  "sabotage_max_count": 3
+  "steal_max_count": 3.0,
+  "sabotage_max_count": 3.0,
+  "anomoly_maximum_occurences": 3.0,
+  "anomoly_cooldown_time": 5.0
 };

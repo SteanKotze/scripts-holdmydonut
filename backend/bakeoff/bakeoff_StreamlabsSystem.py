@@ -57,6 +57,11 @@ anomoly_chance_flop_upper_bound = None                                          
 anomoly_chance_oven_fail = None                                                                         # the chance of an oven fail occuring, given anomoly occurence
 anomoly_chance_oven_fail_lower_bound = None                                                             # the lower bound for the payout reduction due to an oven fail
 anomoly_chance_oven_fail_upper_bound = None                                                             # the upper bound for the payout reduction due to an overn fail
+anomoly_last_occurence = None                                                                           # the last time an anomoly occured in the current bakeoff
+anomoly_users = None                                                                                    # the list of users to which an anomoly has occured in the current bakeoff
+anomoly_bakeoff_occurences = None                                                                       # the total amount of anomolies that have occured in the current bakeoff
+anomoly_maximum_occurences = None                                                                       # ** the maximum amount of anomolies that can occur in any given bakeoff
+anomoly_cooldown_time = None                                                                            # ** the minimum time between anomolies during a bakeoff
 
 first_place_multiplier = None                                                                           # 
 second_place_multiplier = None
@@ -101,6 +106,11 @@ def Init():
     global anomoly_chance_oven_fail
     global anomoly_chance_oven_fail_lower_bound
     global anomoly_chance_oven_fail_upper_bound
+    global anomoly_last_occurence
+    global anomoly_users
+    global anomoly_bakeoff_occurences
+    global anomoly_maximum_occurences
+    global anomoly_cooldown_time
 
     global first_place_multiplier
     global second_place_multiplier
@@ -131,6 +141,8 @@ def Init():
         anomoly_chance_oven_fail = int(settings['anomoly_chance_oven_fail'])
         anomoly_chance_oven_fail_lower_bound = int(settings['anomoly_chance_oven_fail_lower_bound'])
         anomoly_chance_oven_fail_upper_bound = int(settings['anomoly_chance_oven_fail_upper_bound'])
+        anomoly_maximum_occurences = int(settings['anomoly_maximum_occurences'])
+        anomoly_cooldown_time = int(settings['anomoly_cooldown_time'])
 
         first_place_multiplier = float(settings['first_place_multiplier'])
         second_place_multiplier = float(settings['second_place_multiplier'])
@@ -159,6 +171,8 @@ def Init():
         anomoly_chance_oven_fail = 30
         anomoly_chance_oven_fail_lower_bound = 20
         anomoly_chance_oven_fail_upper_bound = 40
+        anomoly_maximum_occurences = 3
+        anomoly_cooldown_time = 5
 
         first_place_multiplier = 2.0
         second_place_multiplier = 1.75
@@ -172,11 +186,6 @@ def Init():
     last_tick = t.time()
     state = 4
     initialisation_time = t.time()
-
-    steal_count = 0
-    steal_users = []
-    sabotage_count = 0
-    sabotage_users = []
 
 #---------------------------------------
 #   [Required] Execute Data / Process Messages
@@ -228,6 +237,7 @@ def bakeoff(user, message):
     #   functionality
     if (message == "!bakeoff"):
         Parent.SendTwitchMessage("You can start a bakeoff by typing !bakeoff <points> in chat. Once the event starts you can !steal <user> and !sabotage <user>")
+        
     elif ((message.find("!bakeoff") == 0) and (user not in users)):
         if ((t.time() >= initialisation_time) and (state == 1 or state == 4)):
             user_entry_amount = extract_donuts(message)
@@ -293,21 +303,137 @@ def bakeoff(user, message):
             Parent.SendTwitchMessage("@" + user + " you lookin kinda sus, ngl")
 
 def bakeoff_tick():
-    #   globals
+    #   Globals
+    global initialisation_time
+    global state
+    global start_time
+    global end_time
+
+    current_time = t.time()
+
+    #   Functionality
+    if (( state == 1 ) and ( start_time <= current_time )):
+        bakeoff_start()
+
+    elif (( state == 2) and ( end_time <= current_time )):
+        bakeoff_end()
+
+    elif (( state == 3) and (initialisation_time <= current_time)):
+        state = 4
+        
+        Parent.SendTwitchMessage("You can now start a new bakeoff!")
+
+    elif ( state == 2 ):
+        bakeoff_anomoly()
+
+def bakeoff_start():
+    #   Globals
+    global users
+
+    global end_time
+    global cook_time
+    global state
+
+    global steal_count
+    global steal_users
+    global sabotage_count
+    global sabotage_users
+
+    global anomoly_last_occurence
+    global anomoly_users
+    global anomoly_bakeoff_occurences
+
+    current_time = t.time()
+
+    #   Functionality
+    end_time = current_time + cook_time
+    state = 2
+
+    rand.seed(t.time())
+
+    steal_count = 0
+    steal_users = []
+    sabotage_count = 0
+    sabotage_users = []
+
+    anomoly_last_occurence = current_time
+    anomoly_users = users[:]
+    anomoly_bakeoff_occurences = 0
+
+    Parent.SendTwitchMessage("Ready. Set. Bake! Our bakers have 5 minutes to complete their creations for the judges!")
+
+def bakeoff_end():
+    #   Globals
     global users
     global users_entry_fees
 
     global cooldown_time
     global initialisation_time
     global state
-    global start_time
-    global cook_time
-    global end_time
 
-    global steal_count
-    global steal_users
-    global sabotage_count
-    global sabotage_users
+    global first_place_multiplier
+    global second_place_multiplier
+    global third_place_multiplier
+    global general_multiplier
+
+    current_time = t.time()
+
+    #   Functionality
+    initialisation_time = current_time + cooldown_time
+    state = 3
+
+    users_placings = []
+    users_payout = []
+    number_of_contestants = len(users)
+
+    for _ in range(0, number_of_contestants):
+        random_user_index = rand.randint(0, len(users))
+
+        if (users_entry_fees[random_user_index] > 0):
+            users_placings.append(users[random_user_index])
+            users_payout.append(users_entry_fees[random_user_index])
+
+        del users[random_user_index]
+        del users_entry_fees[random_user_index]
+
+    number_of_contestants = len(users_placings)
+    payout_podium_message = "The bakeoff has finished with the following podium placings: "
+    payout_general_message = "The following users finished the bakeoff without placing: "
+    debugging_whisper = ""
+
+    for i in range(0, number_of_contestants):
+        if (i == 0):
+            users_payout[i] *= first_place_multiplier
+            payout_podium_message = payout_podium_message + "1st. " + users_placings[i] + " (" + str(users_payout[i]) + "), "
+
+        elif (i == 1):
+            users_payout[i] *= second_place_multiplier
+            payout_podium_message = payout_podium_message + "2st. " + users_placings[i] + " (" + str(users_payout[i]) + "), "
+
+        elif (i == 2): 
+            users_payout[i] *= third_place_multiplier
+            payout_podium_message = payout_podium_message + "3rd. " + users_placings[i] + " (" + str(users_payout[i]) + ")"
+
+        else:
+            users_payout[i] *= general_multiplier
+            payout_general_message = payout_general_message + users_placings[i] + " (" + str(users_payout[i]) + ")"
+
+            if (i != number_of_contestants -1):
+                payout_general_message = payout_general_message + ", "
+
+        debugging_whisper = debugging_whisper + str(i) + ":" + users_placings[i] + ":" + str(users_payout[i]) + " - "
+        Parent.AddPoints(users_placings[i], users_payout[i])
+
+    Parent.SendTwitchMessage(payout_podium_message)
+    Parent.SendTwitchWhisper("I_am_steak", debugging_whisper)
+    
+    if (number_of_contestants > 3):
+        Parent.SendTwitchMessage(payout_general_message)
+
+def bakeoff_anomoly():
+    #   Globals
+    global users
+    global users_entry_fees
 
     global anomoly_chance
     global anomoly_chance_breakdown
@@ -318,110 +444,44 @@ def bakeoff_tick():
     global anomoly_chance_oven_fail_lower_bound
     global anomoly_chance_oven_fail_upper_bound
 
-    global first_place_multiplier
-    global second_place_multiplier
-    global third_place_multiplier
-    global general_multiplier
+    global anomoly_last_occurence
+    global anomoly_users
+    global anomoly_bakeoff_occurences
+    global anomoly_maximum_occurences
+    global anomoly_cooldown_time
 
-    #   variables
     current_time = t.time()
 
-    #   functionality
-    if (( state == 1 ) and ( start_time <= current_time )):
-        end_time = current_time + cook_time
-        state = 2
+    #   Functionality
+    if (current_time >= anomoly_last_occurence + anomoly_cooldown_time):
+        if (anomoly_bakeoff_occurences < anomoly_maximum_occurences):
+            chance = rand.randint(0, 100)
+            if ( chance <= anomoly_chance ):
+                anomoly_last_occurence = current_time
+                anomoly_bakeoff_occurences += 1
 
-        rand.seed(t.time())
+                anomoly_index = rand.randint(0, 100)
 
-        Parent.SendTwitchMessage("Ready. Set. Bake! Our bakers have 5 minutes to complete their creations for the judges!")
+                anomoly_user_index = rand.randint(0, len(anomoly_users))
+                anomoly_user = anomoly_users[anomoly_user_index]
+                user_index = users.index(anomoly_user)
+                anomoly_users.pop(anomoly_user_index)
 
-    elif (( state == 2) and ( end_time <= current_time )):
-        initialisation_time = current_time + cooldown_time
-        state = 3
+                if ( anomoly_index <= anomoly_chance_breakdown ):
+                    users_entry_fees[user_index] = 0
+                    Parent.SendTwitchMessage("@" + anomoly_user + " couldn't take the pressure anymore and quit the competition! They were last heard shouting: 'Not the gumdrop buttons'")
 
-        steal_count = 0
-        steal_users = []
-        sabotage_count = 0
-        sabotage_users = []
-        
-        users_placings = []
-        users_payout = []
-        number_of_contestants = len(users)
+                elif ( anomoly_index <= ( anomoly_chance_breakdown + anomoly_chance_flop ) ):
+                    flop_percentage_amount = rand.randint(anomoly_chance_flop_lower_bound, anomoly_chance_flop_upper_bound)
+                    flop_actual_amount = int( users_entry_fees[user_index] * ( float(flop_percentage_amount) / 100.0 ))
+                    users_entry_fees[user_index] -= flop_actual_amount
+                    Parent.SendTwitchMessage("Despite their best efforts, sweat, blood, tears, and many sacrifices to the sugar Gods, @" + anomoly_user + " pulled out a tray of slimey, eggy cookies with still frozen choc chips. Is there time to steal some of the other competitors' cookies before the judges are called?")
 
-        for _ in range(0, number_of_contestants):
-            random_user_index = rand.randint(0, len(users))
-
-            if (users_entry_fees[random_user_index] > 0):
-                users_placings.append(users[random_user_index])
-                users_payout.append(users_entry_fees[random_user_index])
-
-            del users[random_user_index]
-            del users_entry_fees[random_user_index]
-
-        number_of_contestants = len(users_placings)
-        payout_podium_message = "The bakeoff has finished with the following podium placings: "
-        payout_general_message = "The following users finished the bakeoff without placing: "
-        debugging_whisper = ""
-
-        for i in range(0, number_of_contestants):
-            if (i == 0):
-                users_payout[i] *= first_place_multiplier
-                payout_podium_message = payout_podium_message + "1st. " + users_placings[i] + " (" + str(users_payout[i]) + "), "
-
-            elif (i == 1):
-                users_payout[i] *= second_place_multiplier
-                payout_podium_message = payout_podium_message + "2st. " + users_placings[i] + " (" + str(users_payout[i]) + "), "
-
-            elif (i == 2): 
-                users_payout[i] *= third_place_multiplier
-                payout_podium_message = payout_podium_message + "3rd. " + users_placings[i] + " (" + str(users_payout[i]) + ")"
-
-            else:
-                users_payout[i] *= general_multiplier
-                payout_general_message = payout_general_message + users_placings[i] + " (" + str(users_payout[i]) + ")"
-
-                if (i != number_of_contestants -1):
-                    payout_general_message = payout_general_message + ", "
-
-            debugging_whisper = debugging_whisper + str(i) + ":" + users_placings[i] + ":" + str(users_payout[i]) + " - "
-            Parent.AddPoints(users_placings[i], users_payout[i])
-
-        Parent.SendTwitchMessage(payout_podium_message)
-        Parent.SendTwitchWhisper("I_am_steak", debugging_whisper)
-        
-        if (number_of_contestants > 3):
-            Parent.SendTwitchMessage(payout_general_message)
-
-
-    elif (( state == 3) and (initialisation_time <= current_time)):
-        state = 4
-        
-        Parent.SendTwitchMessage("You can now start a new bakeoff!")
-
-    elif ( state == 2 ):
-        chance = rand.randint(0, 100)
-        if ( chance <= anomoly_chance ):
-            Parent.SendTwitchWhisper("I_am_steak", "chance-" + str(chance) + ": anomoly_chance-" + str(anomoly_chance))
-            anomoly_index = rand.randint(0, 100)
-            user_index = rand.randint(0, len(users))
-            user = users[user_index]
-
-            if ( anomoly_index <= anomoly_chance_breakdown ):
-                users_entry_fees[user_index] = 0
-                Parent.SendTwitchMessage("@" + user + " couldn't take the pressure anymore and quit the competition! They were last heard shouting: 'Not the gumdrop buttons'")
-
-            elif ( anomoly_index <= ( anomoly_chance_breakdown + anomoly_chance_flop ) ):
-                flop_percentage_amount = rand.randint(anomoly_chance_flop_lower_bound, anomoly_chance_flop_upper_bound)
-                flop_actual_amount = int( users_entry_fees[user_index] * ( float(flop_percentage_amount) / 100.0 ))
-                users_entry_fees[user_index] -= flop_actual_amount
-                Parent.SendTwitchMessage("Despite their best efforts, sweat, blood, tears, and many sacrifices to the sugar Gods, @" + user + " pulled out a tray of slimey, eggy cookies with still frozen choc chips. Is there time to steal some of the other competitors' cookies before the judges are called?")
-
-            else:
-                flop_percentage_amount = rand.randint(anomoly_chance_oven_fail_lower_bound, anomoly_chance_oven_fail_upper_bound)
-                flop_actual_amount = int( users_entry_fees[user_index] * ( float(flop_percentage_amount) / 100.0 ))
-                users_entry_fees[user_index] -= flop_actual_amount
-                Parent.SendTwitchmessage("In a particularly extravagant show of flair and pizazz, @" + user + " expertly put their cake in the oven and spun round in a twirl to throw off the other bakers, but did they remember to turn the oven on?")
-
+                else:
+                    flop_percentage_amount = rand.randint(anomoly_chance_oven_fail_lower_bound, anomoly_chance_oven_fail_upper_bound)
+                    flop_actual_amount = int( users_entry_fees[user_index] * ( float(flop_percentage_amount) / 100.0 ))
+                    users_entry_fees[user_index] -= flop_actual_amount
+                    Parent.SendTwitchmessage("In a particularly extravagant show of flair and pizazz, @" + anomoly_user + " expertly put their cake in the oven and spun round in a twirl to throw off the other bakers, but did they remember to turn the oven on?")
 #---------------------------------------
 #   backend
 #---------------------------------------
