@@ -275,7 +275,7 @@ def bakeoff(user, message):
                     Parent.SendTwitchMessage("@" + user + " no PunOko")
 
         else:
-            Parent.SendTwitchmessage("@" + user + " you lookin kinda sus, ngl")
+            Parent.SendTwitchMessage("@" + user + " you lookin kinda sus, ngl")
 
     elif (( message.find("!sabotage") == 0 ) and ( user in users ) and ( state == 2 ) and ( sabotage_count < sabotage_max_count)):
         if ( user not in sabotage_users ):
